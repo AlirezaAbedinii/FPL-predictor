@@ -2,19 +2,24 @@ import requests
 import pandas as pd
 import numpy as np
 
-url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
-r = requests.get(url)
-json = r.json()
+url_1 = 'https://fantasy.premierleague.com/api/bootstrap-static/'
+url_2 = 'https://fantasy.premierleague.com/api/fixtures/'
+r_1 = requests.get(url_1)
+r_2 = requests.get(url_2)
+json_1 = r_1.json()
+json_2 = r_2.json()
 data_path = 'data\\'
 
-events_df = pd.DataFrame(json['events'])
-game_settings_df = pd.DataFrame([json['game_settings']])
-phases_df = pd.DataFrame(json['phases'])
-teams_df = pd.DataFrame(json['teams'])
-total_players_df = pd.DataFrame([json['total_players']])
-elements_df = pd.DataFrame(json['elements'])
-element_stats_df = pd.DataFrame(json['element_stats'])
-element_types_df = pd.DataFrame(json['element_types'])
+events_df = pd.DataFrame(json_1['events'])
+game_settings_df = pd.DataFrame([json_1['game_settings']])
+phases_df = pd.DataFrame(json_1['phases'])
+teams_df = pd.DataFrame(json_1['teams'])
+total_players_df = pd.DataFrame([json_1['total_players']])
+elements_df = pd.DataFrame(json_1['elements'])
+element_stats_df = pd.DataFrame(json_1['element_stats'])
+element_types_df = pd.DataFrame(json_1['element_types'])
+fixtures_df = pd.DataFrame(json_2)
+
 
 events_df.to_csv(data_path + 'events.csv')
 game_settings_df.to_csv(data_path + 'game_settings.csv')
@@ -24,3 +29,4 @@ total_players_df.to_csv(data_path + 'total_players.csv')
 elements_df.to_csv(data_path + 'elements.csv')
 element_stats_df.to_csv(data_path + 'element_stats.csv')
 element_types_df.to_csv(data_path + 'element_types.csv')
+fixtures_df.to_csv(data_path + 'fixtures.csv')

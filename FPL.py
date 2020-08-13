@@ -20,4 +20,12 @@ element_types_df = pd.read_csv(data_path + 'element_types.csv')
 elements_df['bonus_percent'] = elements_df.bonus.astype(float)/elements_df.total_points.astype(float)
 
 #print((slim_elements_df[slim_elements_df.bonus_percent.gt(0)].pivot_table(index='position',values='bonus_percent',aggfunc=np.mean).reset_index()).sort_values('bonus_percent', ascending=False))
-print((elements_df.loc[elements_df.total_points>=100].sort_values('bonus_percent', ascending=False))[['first_name', 'second_name', 'bonus_percent']])
+#print((elements_df.loc[elements_df.total_points>=100].sort_values('bonus_percent', ascending=False))[['first_name', 'second_name', 'bonus_percent']])
+
+print((elements_df.loc[elements_df.in_dreamteam==True].sort_values('element_type', ascending=True))[['first_name', 'second_name', 'total_points']])
+
+
+fwd_df = elements_df.loc[elements_df.element_type == 4]
+mid_df = elements_df.loc[elements_df.element_type == 3]
+def_df = elements_df.loc[elements_df.element_type == 2]
+goal_df = elements_df.loc[elements_df.element_type == 1]
