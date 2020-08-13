@@ -2,6 +2,9 @@ import requests
 import pandas as pd
 import numpy as np
 
+
+
+
 url = 'https://fantasy.premierleague.com/api/fixtures/'
 r = requests.get(url)
 json = r.json()
