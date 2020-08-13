@@ -4,10 +4,10 @@ import numpy as np
 data_path = 'data\\'
 
 events_df = pd.read_csv(data_path + 'events.csv')
-#game_settings_df = pd.read_csv('game_settings.csv')
+game_settings_df = pd.read_csv(data_path + 'game_settings.csv')
 phases_df = pd.read_csv(data_path + 'phases.csv')
 teams_df = pd.read_csv(data_path + 'teams.csv')
-#total_players_df = pd.read_csv('total_players.csv')
+total_players_df = pd.read_csv(data_path + 'total_players.csv')
 elements_df = pd.read_csv(data_path + 'elements.csv')
 element_stats_df = pd.read_csv(data_path + 'element_stats.csv')
 element_types_df = pd.read_csv(data_path + 'element_types.csv')
