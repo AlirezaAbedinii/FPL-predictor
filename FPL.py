@@ -25,3 +25,4 @@ slim_elements_df['bonus_percent'] = slim_elements_df.bonus.astype(float)/slim_el
 
 #print((slim_elements_df[slim_elements_df.bonus_percent.gt(0)].pivot_table(index='position',values='bonus_percent',aggfunc=np.mean).reset_index()).sort_values('bonus_percent', ascending=False))
 print(slim_elements_df[slim_elements_df.total_points.gt(99)].sort_values('bonus_percent', ascending=False))
+print("kos")
