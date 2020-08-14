@@ -31,6 +31,13 @@ class Stat:
         results += 'bonus' + str(self.bonus) + 'bps' + str(self.bps)
         return results
 
+#this method returns player id given his second_name
+def name_to_id(player_second_name):
+    ids = elements_df.loc[elements_df.second_name == player_second_name].id.tolist()
+    if(len(ids) == 1):
+        return ids[0]
+    return ids
+
 #this method returns home goals scored by a player given his id
 def home_goals(player_id):
     h = 0
@@ -41,6 +48,7 @@ def home_goals(player_id):
     return h
 
 #this method returns away goals scored by a player given his id
+
 def away_goals(player_id):
     a = 0
     for stat in classified_stats:
@@ -104,9 +112,9 @@ elements_df['away_goals'] = elements_df['id'].apply(lambda  x: away_goals(x)) #a
 elements_df['home_assists'] = elements_df['id'].apply(lambda  x: home_assists(x)) #add home_assists column to elements
 elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)) #add away_assists column to elements
 pd.set_option('display.max_columns', None) #show all columns when printing
-#sort elemets by home_goals and print
-print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
+pd.set_option('display.max_rows', None) #show all rows when printing
 
-# elements_df['value'] = elements_df.value_season.astype(float)
-#print((slim_elements_df[slim_elements_df.bonus_percent.gt(0)].pivot_table(index='position',values='bonus_percent',aggfunc=np.mean).reset_index()).sort_values('bonus_percent', ascending=False))
-#print((elements_df.loc[elements_df.total_points>=100].sort_values('bonus_percent', ascending=False))[['first_name', 'second_name', 'bonus_percent']])
+#sort elemets by home_goals and print
+#print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
+
+print(away_goals(name_to_id('Mount')))
