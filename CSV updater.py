@@ -6,6 +6,7 @@ import numpy as np
 # getting raw data from fpl API
 url_1 = 'https://fantasy.premierleague.com/api/bootstrap-static/'
 url_2 = 'https://fantasy.premierleague.com/api/fixtures/'
+url_3 = 'https://fantasy.premierleague.com/api/element-summary/{}/'
 r_1 = requests.get(url_1)
 r_2 = requests.get(url_2)
 json_1 = r_1.json()

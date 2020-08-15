@@ -38,6 +38,9 @@ def name_to_id(player_second_name):
         return ids[0]
     return ids
 
+def player_data(player_id):
+    return elements_df.loc[elements_df.id == player_id]
+
 #this method returns home goals scored by a player given his id
 def home_goals(player_id):
     h = 0
@@ -78,6 +81,7 @@ def away_assists(player_id):
 
 
 data_path = 'data\\'
+history_path = 'history\\'
 
 events_df = pd.read_csv(data_path + 'events.csv')
 #game_settings_df = pd.read_csv('game_settings.csv')
@@ -88,7 +92,7 @@ elements_df = pd.read_csv(data_path + 'elements.csv')
 element_stats_df = pd.read_csv(data_path + 'element_stats.csv')
 element_types_df = pd.read_csv(data_path + 'element_types.csv')
 fixtures_df = pd.read_csv(data_path + 'fixtures.csv')
-
+#history_df = pd.read_csv(data_path + history_path + )
 
 classified_stats = []
 for i in range(len(fixtures_df)):
@@ -116,5 +120,3 @@ pd.set_option('display.max_rows', None) #show all rows when printing
 
 #sort elemets by home_goals and print
 #print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
-
-print(away_goals(name_to_id('Mount')))
