@@ -92,6 +92,7 @@ elements_df = pd.read_csv(data_path + 'elements.csv')
 element_stats_df = pd.read_csv(data_path + 'element_stats.csv')
 element_types_df = pd.read_csv(data_path + 'element_types.csv')
 fixtures_df = pd.read_csv(data_path + 'fixtures.csv')
+gw_df = pd.read_csv('merged_gw.csv')
 #history_df = pd.read_csv(data_path + history_path + )
 
 classified_stats = []
@@ -116,7 +117,10 @@ elements_df['away_goals'] = elements_df['id'].apply(lambda  x: away_goals(x)) #a
 elements_df['home_assists'] = elements_df['id'].apply(lambda  x: home_assists(x)) #add home_assists column to elements
 elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)) #add away_assists column to elements
 pd.set_option('display.max_columns', None) #show all columns when printing
-pd.set_option('display.max_rows', None) #show all rows when printing
+#pd.set_option('display.max_rows', None) #show all rows when printing
+
+#print best performances by a player in a gameweek
+print(gw_df[['name','total_points','GW']].sort_values('total_points', ascending=False))
 
 #sort elemets by home_goals and print
 #print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
