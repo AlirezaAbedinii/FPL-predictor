@@ -120,7 +120,9 @@ pd.set_option('display.max_columns', None) #show all columns when printing
 #pd.set_option('display.max_rows', None) #show all rows when printing
 
 #print best performances by a player in a gameweek
-print(gw_df[['name','total_points','GW']].sort_values('total_points', ascending=False))
+#print(gw_df[['name','total_points','GW']].sort_values('total_points', ascending=False))
 
+print(gw_df.pivot_table(index='name',values=['goals_scored','assists','total_points'],aggfunc=np.sum).reset_index().sort_values('total_points', ascending=False))
+#print(gw_df.loc[gw_df.name == 'Kevin_De Bruyne_215'])
 #sort elemets by home_goals and print
 #print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
