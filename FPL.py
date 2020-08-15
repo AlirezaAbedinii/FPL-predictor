@@ -116,13 +116,9 @@ elements_df['home_goals'] = elements_df['id'].apply(lambda  x: home_goals(x)) #a
 elements_df['away_goals'] = elements_df['id'].apply(lambda  x: away_goals(x)) #add away_goals column to elements
 elements_df['home_assists'] = elements_df['id'].apply(lambda  x: home_assists(x)) #add home_assists column to elements
 elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)) #add away_assists column to elements
-pd.set_option('display.max_columns', None) #show all columns when printing
-#pd.set_option('display.max_rows', None) #show all rows when printing
+#pd.set_option('display.max_columns', None) #show all columns when printing
+pd.set_option('display.max_rows', None) #show all rows when printing
 
-#print best performances by a player in a gameweek
-#print(gw_df[['name','total_points','GW']].sort_values('total_points', ascending=False))
-
-print(gw_df.pivot_table(index='name',values=['goals_scored','assists','total_points'],aggfunc=np.sum).reset_index().sort_values('total_points', ascending=False))
-#print(gw_df.loc[gw_df.name == 'Kevin_De Bruyne_215'])
-#sort elemets by home_goals and print
-#print(elements_df[['second_name', 'home_goals','away_goals','home_assists','away_assists']].sort_values('home_goals', ascending=False))
+#collect cumulative data and save to csv
+#cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','yellow_cards','GW']].groupby(['name','GW']).sum().groupby(level=0).cumsum().reset_index()
+#cumulative_df.to_csv('cumulative_gw.csv', index=False)
