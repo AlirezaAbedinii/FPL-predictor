@@ -9,7 +9,7 @@ class Stat:
         stat_json = json.loads(json_string)
 
         for js in stat_json:
-            #print(js['identifier'])
+            # print(js['identifier'])
             del js['identifier']
 
         self.goals_scored = stat_json[0]
@@ -33,19 +33,23 @@ class Stat:
 
 
 def player_type(player_name):
-    return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(str) == player_name].element_type.tolist()[0]
+    return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
+        str) == player_name].element_type.tolist()[0]
 
-#this method returns player id given his second_name
+
+# this method returns player id given his second_name
 def name_to_id(player_second_name):
     ids = elements_df.loc[elements_df.second_name == player_second_name].id.tolist()
-    if(len(ids) == 1):
+    if (len(ids) == 1):
         return ids[0]
     return ids
+
 
 def player_data(player_id):
     return elements_df.loc[elements_df.id == player_id]
 
-#this method returns home goals scored by a player given his id
+
+# this method returns home goals scored by a player given his id
 def home_goals(player_id):
     h = 0
     for stat in classified_stats:
@@ -54,7 +58,8 @@ def home_goals(player_id):
                 h += element['value']
     return h
 
-#this method returns away goals scored by a player given his id
+
+# this method returns away goals scored by a player given his id
 
 def away_goals(player_id):
     a = 0
@@ -64,7 +69,8 @@ def away_goals(player_id):
                 a += element['value']
     return a
 
-#this method returns home assists provided by a player given his id
+
+# this method returns home assists provided by a player given his id
 def home_assists(player_id):
     h = 0
     for stat in classified_stats:
@@ -73,7 +79,8 @@ def home_assists(player_id):
                 h += element['value']
     return h
 
-#this method returns away assists provided by a player given his id
+
+# this method returns away assists provided by a player given his id
 def away_assists(player_id):
     a = 0
     for stat in classified_stats:
@@ -83,21 +90,20 @@ def away_assists(player_id):
     return a
 
 
-
 data_path = 'data\\'
 history_path = 'history\\'
 
 events_df = pd.read_csv(data_path + 'events.csv')
-#game_settings_df = pd.read_csv('game_settings.csv')
+# game_settings_df = pd.read_csv('game_settings.csv')
 phases_df = pd.read_csv(data_path + 'phases.csv')
 teams_df = pd.read_csv(data_path + 'teams.csv')
-#total_players_df = pd.read_csv('total_players.csv')
+# total_players_df = pd.read_csv('total_players.csv')
 elements_df = pd.read_csv(data_path + 'elements.csv')
 element_stats_df = pd.read_csv(data_path + 'element_stats.csv')
 element_types_df = pd.read_csv(data_path + 'element_types.csv')
 fixtures_df = pd.read_csv(data_path + 'fixtures.csv')
 gw_df = pd.read_csv('merged_gw.csv')
-#history_df = pd.read_csv(data_path + history_path + )
+# history_df = pd.read_csv(data_path + history_path + )
 
 classified_stats = []
 for i in range(len(fixtures_df)):
@@ -107,38 +113,56 @@ for i in range(len(fixtures_df)):
 # replacing raw stats with serialized Stat class
 fixtures_df.stats = classified_stats
 
-#slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
+# slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
 # elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
 # del elements_df['element_type']
-elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name) #replace team name with team id
-#print(elements_df[['first_name','second_name','position','team']])
-elements_df['bonus_percent'] = elements_df.bonus.astype(float)/elements_df.total_points.astype(float)
-#print(elements_df.sort_values())
+elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
+# print(elements_df[['first_name','second_name','position','team']])
+elements_df['bonus_percent'] = elements_df.bonus.astype(float) / elements_df.total_points.astype(float)
+# print(elements_df.sort_values())
 
 
-elements_df['home_goals'] = elements_df['id'].apply(lambda  x: home_goals(x)) #add home_goals column to elements
-elements_df['away_goals'] = elements_df['id'].apply(lambda  x: away_goals(x)) #add away_goals column to elements
-elements_df['home_assists'] = elements_df['id'].apply(lambda  x: home_assists(x)) #add home_assists column to elements
-elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)) #add away_assists column to elements
-#pd.set_option('display.max_columns', None) #show all columns when printing
-pd.set_option('display.max_rows', None) #show all rows when printing
+elements_df['home_goals'] = elements_df['id'].apply(lambda x: home_goals(x))  # add home_goals column to elements
+elements_df['away_goals'] = elements_df['id'].apply(lambda x: away_goals(x))  # add away_goals column to elements
+elements_df['home_assists'] = elements_df['id'].apply(lambda x: home_assists(x))  # add home_assists column to elements
+elements_df['away_assists'] = elements_df['id'].apply(lambda x: away_assists(x))  # add away_assists column to elements
+# pd.set_option('display.max_columns', None) #show all columns when printing
+pd.set_option('display.max_rows', None)  # show all rows when printing
 
-#collect cumulative data and save to csv
-gw_df['GW'] = gw_df['GW'].apply(lambda  x: x if x<=29 else x-9)
+# collect cumulative data and save to csv
+gw_df['GW'] = gw_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
 gw_df = gw_df.loc[gw_df.minutes != 0]
 
-#print(player_type('Aaron_Connolly_534'))
+# print(player_type('Aaron_Connolly_534'))
 
-cumulative_df = gw_df[['name','goals_scored','assists','bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed', 'ict_index', 'influence', 'creativity','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','was_home','GW']]
+cumulative_df = gw_df[
+    ['name', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed', 'ict_index',
+     'influence', 'creativity', 'clean_sheets', 'saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points',
+     'was_home', 'GW']]
 cumulative_df['tmp'] = cumulative_df['total_points']
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
-cumulative_df = cumulative_df.groupby(['name','GW','tmp','was_home','position']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df = cumulative_df.groupby(['name', 'GW', 'tmp', 'was_home', 'position']).sum().groupby(
+    level=0).cumsum().reset_index()
 cumulative_df['total_points'] = cumulative_df['total_points'] - cumulative_df['tmp']
 del cumulative_df['tmp']
+
+# adding difficulty file
+difficulty_df1 = fixtures_df[['event', 'team_h', 'team_h_difficulty']]
+difficulty_df1 = difficulty_df1.rename(columns={'event': 'GW', 'team_h': 'team_id', 'team_h_difficulty': 'difficulty'})
+
+difficulty_df2 = fixtures_df[['event', 'team_a', 'team_a_difficulty']]
+difficulty_df2 = difficulty_df2.rename(columns={'event': 'GW', 'team_a': 'team_id', 'team_a_difficulty': 'difficulty'})
+
+difficulty_df = difficulty_df1.append(difficulty_df2, ignore_index=True)
+
+difficulty_df['GW'] = difficulty_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
+difficulty_df.to_csv('difficulties.csv')
+
+
 cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 #
 
-total_points_df = gw_df[['name', 'total_points', 'GW','was_home']]
+total_points_df = gw_df[['name', 'total_points', 'GW', 'was_home']]
 total_points_df['position'] = total_points_df['name'].apply(lambda x: player_type(x))
-total_points_df = total_points_df.groupby(['name','GW','was_home','position','total_points']).sum().reset_index()
-total_points_df.to_csv('total_points_gw_2.csv',index=False)
+total_points_df = total_points_df.groupby(['name', 'GW', 'was_home', 'position', 'total_points']).sum().reset_index()
+total_points_df.to_csv('total_points_gw_2.csv', index=False)

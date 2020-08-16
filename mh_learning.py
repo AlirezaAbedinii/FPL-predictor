@@ -57,6 +57,10 @@ def non_blank_performance(real, predicted, threshold):
     print(result)
 
 
+def pie_chart(real, predicted):
+    pass
+
+
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
 data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards']
