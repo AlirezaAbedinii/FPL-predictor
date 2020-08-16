@@ -31,6 +31,10 @@ class Stat:
         results += 'bonus' + str(self.bonus) + 'bps' + str(self.bps)
         return results
 
+
+def player_type(player_name):
+    return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(str) == player_name].element_type.tolist()[0]
+
 #this method returns player id given his second_name
 def name_to_id(player_second_name):
     ids = elements_df.loc[elements_df.second_name == player_second_name].id.tolist()
@@ -104,8 +108,8 @@ for i in range(len(fixtures_df)):
 fixtures_df.stats = classified_stats
 
 #slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
-elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
-del elements_df['element_type']
+# elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
+# del elements_df['element_type']
 elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name) #replace team name with team id
 #print(elements_df[['first_name','second_name','position','team']])
 elements_df['bonus_percent'] = elements_df.bonus.astype(float)/elements_df.total_points.astype(float)
@@ -123,14 +127,18 @@ pd.set_option('display.max_rows', None) #show all rows when printing
 gw_df['GW'] = gw_df['GW'].apply(lambda  x: x if x<=29 else x-9)
 gw_df = gw_df.loc[gw_df.minutes != 0]
 
-cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','GW']]
+#print(player_type('Aaron_Connolly_534'))
+
+cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','was_home','GW']]
 cumulative_df['tmp'] = cumulative_df['total_points']
-cumulative_df = cumulative_df.groupby(['name','GW','tmp']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
+cumulative_df = cumulative_df.groupby(['name','GW','tmp','was_home','position']).sum().groupby(level=0).cumsum().reset_index()
 cumulative_df['total_points'] = cumulative_df['total_points'] - cumulative_df['tmp']
 del cumulative_df['tmp']
 cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 #
 
-# total_points_df = gw_df[['name', 'total_points', 'GW']]
-# total_points_df = total_points_df.groupby(['name','GW','total_points']).sum().reset_index()
-# total_points_df.to_csv('total_points_gw_2.csv',index=False)
+total_points_df = gw_df[['name', 'total_points', 'GW','was_home']]
+total_points_df['position'] = total_points_df['name'].apply(lambda x: player_type(x))
+total_points_df = total_points_df.groupby(['name','GW','was_home','position','total_points']).sum().reset_index()
+total_points_df.to_csv('total_points_gw_2.csv',index=False)
