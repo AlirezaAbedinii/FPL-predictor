@@ -4,13 +4,14 @@ import pandas as pd
 import numpy as np
 
 
-def learner(position, necessary_data):
+def learner(position):
 
     x_df = pd.read_csv(data_path + 'cumulative_gw_2.csv')
     y_df = pd.read_csv(data_path + 'total_points_gw_2.csv')
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
+    necessary_data = data_per_position[position]
     x_df = x_df[necessary_data]
     print(x_df)
     y_df = y_df['total_points']
@@ -57,5 +58,9 @@ def non_blank_performance(real, predicted, threshold):
 
 
 data_path = 'mh_learning_data\\'
-data = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes']
-learner(4, data)
+data_per_position = dict()
+data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards']
+data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'clean_sheets']
+data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'clean_sheets']
+data_per_position[1] = ['bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'saves', 'clean_sheets']
+learner(2)
