@@ -119,6 +119,13 @@ elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)
 #pd.set_option('display.max_columns', None) #show all columns when printing
 pd.set_option('display.max_rows', None) #show all rows when printing
 
+#fix gameweek numbers which are more than 38
+gw_df['GW'] = gw_df['GW'].apply(lambda x: x if x<=29 else x-9)
+
 #collect cumulative data and save to csv
 #cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','yellow_cards','GW']].groupby(['name','GW']).sum().groupby(level=0).cumsum().reset_index()
 #cumulative_df.to_csv('cumulative_gw.csv', index=False)
+
+#generate total_points per week for each player
+#total_points_df = gw_df[['name','total_points','GW']].groupby(['name','GW']).sum().reset_index()
+#total_points_df.to_csv('total_points_gw.csv',index=False)
