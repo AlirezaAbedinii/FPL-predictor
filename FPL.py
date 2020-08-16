@@ -129,7 +129,7 @@ gw_df = gw_df.loc[gw_df.minutes != 0]
 
 #print(player_type('Aaron_Connolly_534'))
 
-cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','was_home','GW']]
+cumulative_df = gw_df[['name','goals_scored','assists','bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed', 'ict_index', 'influence', 'creativity','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','was_home','GW']]
 cumulative_df['tmp'] = cumulative_df['total_points']
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
 cumulative_df = cumulative_df.groupby(['name','GW','tmp','was_home','position']).sum().groupby(level=0).cumsum().reset_index()
