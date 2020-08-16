@@ -120,5 +120,17 @@ elements_df['away_assists'] = elements_df['id'].apply(lambda  x: away_assists(x)
 pd.set_option('display.max_rows', None) #show all rows when printing
 
 #collect cumulative data and save to csv
-cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','yellow_cards','minutes', 'total_points','GW']].groupby(['name','GW']).sum().groupby(level=0).cumsum().reset_index()
-cumulative_df.to_csv('cumulative_gw.csv', index=False)
+gw_df['GW'] = gw_df['GW'].apply(lambda  x: x if x<=29 else x-9)
+gw_df = gw_df.loc[gw_df.minutes != 0]
+
+cumulative_df = gw_df[['name','goals_scored','assists','bonus','clean_sheets','saves','goals_conceded','yellow_cards','minutes', 'total_points','GW']]
+cumulative_df['tmp'] = cumulative_df['total_points']
+cumulative_df = cumulative_df.groupby(['name','GW','tmp']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df['total_points'] = cumulative_df['total_points'] - cumulative_df['tmp']
+del cumulative_df['tmp']
+cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
+#
+
+# total_points_df = gw_df[['name', 'total_points', 'GW']]
+# total_points_df = total_points_df.groupby(['name','GW','total_points']).sum().reset_index()
+# total_points_df.to_csv('total_points_gw_2.csv',index=False)
