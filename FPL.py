@@ -139,14 +139,7 @@ for i in range(len(fixtures_df)):
 # replacing raw stats with serialized Stat class
 fixtures_df.stats = classified_stats
 
-# slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
-# elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
-# del elements_df['element_type']
-#elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
-# print(elements_df[['first_name','second_name','position','team']])
 elements_df['bonus_percent'] = elements_df.bonus.astype(float) / elements_df.total_points.astype(float)
-# print(elements_df.sort_values())
-
 
 elements_df['home_goals'] = elements_df['id'].apply(lambda x: home_goals(x))  # add home_goals column to elements
 elements_df['away_goals'] = elements_df['id'].apply(lambda x: away_goals(x))  # add away_goals column to elements
@@ -172,6 +165,19 @@ scores_df['opponent_goals'] -= scores_df['week_goals']
 scores_df = scores_df[['team','GW','opponent_goals']]
 scores_df.to_csv('scores.csv', index=False)
 
+#cumulative goals conceded by teams_per_week
+home_concedes_df = fixtures_df[['event','team_h','team_a_score']].rename(columns={'event': 'GW', 'team_h': 'team'}).groupby(['team','GW']).sum().reset_index()
+away_concedes_df = fixtures_df[['event','team_a','team_h_score']].rename(columns={'event': 'GW', 'team_a': 'team'}).groupby(['team','GW']).sum().reset_index()
+concedes_df = home_concedes_df.append(away_concedes_df, ignore_index=True)
+concedes_df = concedes_df.groupby(['team','GW']).sum().reset_index()
+concedes_df['week_goals'] = concedes_df['team_a_score'] + concedes_df['team_h_score']
+concedes_df['opponent_conceded'] = concedes_df['team_h_score'] + concedes_df['team_a_score']
+concedes_df = concedes_df.groupby(['team','GW','week_goals']).sum().groupby(level=0).cumsum().reset_index()
+concedes_df['GW'] = concedes_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
+concedes_df['opponent_conceded'] -= concedes_df['week_goals']
+concedes_df = concedes_df[['team','GW','opponent_conceded']]
+concedes_df.to_csv('concedes.csv', index=False)
+
 
 no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW','fixture']).sum().reset_index()
 no_zero_df.to_csv('no_zero.csv', index=False)
@@ -190,10 +196,15 @@ difficulty_df.to_csv('difficulties.csv', index=False)
 #
 cumulative_df = cumulative_df.merge(difficulty_df,  how='left', left_on='fixture', right_on = 'id')
 cumulative_df = cumulative_df.merge(scores_df, how='left', left_on=['GW','opponent_team'], right_on=['GW', 'team'])
+cumulative_df = cumulative_df.merge(concedes_df, how='left', left_on=['GW','opponent_team'], right_on=['GW', 'team'])
 cumulative_df['difficulty'] = cumulative_df['team_h_difficulty']*cumulative_df['was_home'] + cumulative_df['team_a_difficulty']*(1 - cumulative_df['was_home'])
 del cumulative_df['id_x']
 del cumulative_df['id_y']
-del cumulative_df['team']
+del cumulative_df['team_x']
+del cumulative_df['team_y']
+
+cumulative_df['opponent_goals'] = cumulative_df['opponent_goals'] / abs(cumulative_df['GW'] - 1.00001)
+cumulative_df['opponent_conceded'] = cumulative_df['opponent_conceded'] / abs(cumulative_df['GW'] - 1.00001)
 
 total_points_df = no_zero_df[['name', 'GW', 'fixture', 'total_points']]
 total_points_df = total_points_df.groupby(['name','GW', 'fixture']).sum().reset_index()

@@ -32,11 +32,11 @@ def learner(position):
         regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam' , activation='logistic', max_iter=100000,
                                  learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
     else:
-        regressor = DecisionTreeRegressor(criterion='mse', splitter='best', max_depth=10, min_samples_split=0.2,
-                                          min_samples_leaf=1, min_weight_fraction_leaf=0.0,
-                                          max_features='auto').fit(x_train, y_train)
-        # regressor = MLPRegressor(hidden_layer_sizes=(10, 10, 10), solver='adam', activation='logistic', max_iter=100000,
-        #                          learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
+        # regressor = DecisionTreeRegressor(criterion='mse', splitter='best', max_depth=10, min_samples_split=0.2,
+        #                                   min_samples_leaf=1, min_weight_fraction_leaf=0.0,
+        #                                   max_features='auto').fit(x_train, y_train)
+        regressor = MLPRegressor(hidden_layer_sizes=(10, 10, 10), solver='adam', activation='logistic', max_iter=100000,
+                                  learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
     output = regressor.predict(x_test)
 
     difference = abs(output - y_test)
@@ -79,9 +79,9 @@ def pie_chart(real, predicted):
 
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
-data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
+data_per_position[4] = ['goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
 data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
 data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
 data_per_position[1] = ['bonus', 'bps', 'form', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
 
-learner(2)
+learner(3)
