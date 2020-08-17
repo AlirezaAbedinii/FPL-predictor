@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 def learner(position):
 
-    x_df = pd.read_csv(data_path + 'cumulative_gw_2.csv')
-    y_df = pd.read_csv(data_path + 'total_points_gw_2.csv')
+    x_df = pd.read_csv(data_path + 'x.csv')
+    y_df = pd.read_csv(data_path + 'y.csv')
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
@@ -83,7 +83,8 @@ def pie_chart(real, predicted):
     pass
 
 
-data_path = 'mh_learning_data\\'
+season = '2018'
+data_path = 'mh_learning_data\\' + season + '\\'
 data_per_position = dict()
 data_per_position[4] = ['goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
 data_per_position[3]= ['opponent_conceded','goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']

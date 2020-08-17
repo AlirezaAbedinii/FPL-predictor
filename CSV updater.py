@@ -11,7 +11,8 @@ r_1 = requests.get(url_1)
 r_2 = requests.get(url_2)
 json_1 = r_1.json()
 json_2 = r_2.json()
-data_path = 'data\\'
+season = '2020'
+data_path = 'data\\' + season + '\\'
 
 # convert received jsons to csv
 events_df = pd.DataFrame(json_1['events'])
