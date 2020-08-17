@@ -28,20 +28,25 @@ def learner(position):
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
-    regressor = MLPRegressor(hidden_layer_sizes=(100,100,100), solver='adam' , activation='logistic', max_iter=100000,
-                             learning_rate_init=0.001, learning_rate='invscaling').fit(x_train, y_train)
-
+    if position > 1:
+        regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam' , activation='logistic', max_iter=100000,
+                                 learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
+    else:
+        regressor = MLPRegressor(hidden_layer_sizes=(10, 10, 10), solver='adam', activation='logistic', max_iter=100000,
+                                 learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
     output = regressor.predict(x_test)
 
-    mse = ((output - y_test) ** 2).mean()
+    difference = (output - y_test) ** 2
+    print('VARIANCE = ' + str(np.var(difference)))
+    mse = difference.mean()
     print('MSE = ' + str(mse))
-    non_blank_performance(y_test, output, 6)
+    non_blank_performance(y_test, output, 6, 100)
     df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': output.flatten()})
     plt.scatter(y_test, output, color='gray', alpha=0.5)
     plt.show()
 
 
-def non_blank_performance(real, predicted, threshold):
+def non_blank_performance(real, predicted, threshold1, threshold2):
     real_np = np.array(real)
     predicted_np = np.array(predicted)
     perfect = 0.0
@@ -51,11 +56,11 @@ def non_blank_performance(real, predicted, threshold):
     total = 0.0
     difference = abs(real - predicted)
     for i in range(len(real_np)):
-        if real[i] > threshold:
+        if threshold1 < real[i] < threshold2:
             if difference[i] < 0.5:
-                perfect += 1;
+                perfect += 1
             elif difference[i] < 2:
-                good +=1
+                good += 1
             elif difference[i] < 4:
                 normal += 1
             else:
@@ -71,8 +76,9 @@ def pie_chart(real, predicted):
 
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
-data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
+data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
 data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
 data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
-data_per_position[1] = ['bonus', 'bps', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards', 'penalties_saved', 'difficulty']
-learner(3)
+data_per_position[1] = ['bonus', 'bps', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
+
+learner(1)
