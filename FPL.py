@@ -36,7 +36,6 @@ def player_type(player_name):
     return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
         str) == player_name].element_type.tolist()[0]
 
-
 def player_team(player_name):
     return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
         str) == player_name].team.tolist()[0]
