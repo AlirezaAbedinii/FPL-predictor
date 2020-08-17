@@ -8,8 +8,11 @@ import matplotlib.pyplot as plt
 
 def learner(position):
 
-    x_df = pd.read_csv(data_path + 'x.csv')
-    y_df = pd.read_csv(data_path + 'y.csv')
+    x_df = pd.read_csv(data_path + seasons[0] + '\\x.csv')
+    x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
+    y_df = pd.read_csv(data_path + seasons[0] + '\\y.csv')
+    y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
+
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
@@ -83,8 +86,8 @@ def pie_chart(real, predicted):
     pass
 
 
-season = '2018'
-data_path = 'mh_learning_data\\' + season + '\\'
+seasons = ['2018','2019']
+data_path = 'mh_learning_data\\'
 data_per_position = dict()
 data_per_position[4] = ['goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
 data_per_position[3]= ['opponent_conceded','goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
