@@ -2,6 +2,8 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 
 def learner(position):
@@ -13,10 +15,10 @@ def learner(position):
 
     necessary_data = data_per_position[position]
     x_df = x_df[necessary_data]
-    print(x_df)
     y_df = y_df['total_points']
-    x_df['was_home'] = x_df['was_home'].apply(lambda x: 1 if x == True else 0)
-    x_df['minutes']/=90.0
+    # x_df['was_home'] = x_df['was_home'].apply(lambda x: 1 if x == True else 0)
+    # for parameter in necessary_data:
+    #     x_df[parameter] = (x_df[parameter] - x_df[parameter].min())/x_df[parameter].max()
 
     x = x_df.to_numpy()
     y = y_df.to_numpy().reshape(-1)
@@ -26,19 +28,23 @@ def learner(position):
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
-    regressor = MLPRegressor(hidden_layer_sizes=(5, 10, 5), activation='logistic', max_iter=100000,
-                             learning_rate_init=0.001).fit(x_train, y_train)
+    regressor = MLPRegressor(hidden_layer_sizes=(100,100,100), solver='adam' , activation='logistic', max_iter=100000,
+                             learning_rate_init=0.001, learning_rate='invscaling').fit(x_train, y_train)
 
     output = regressor.predict(x_test)
 
     mse = ((output - y_test) ** 2).mean()
     print('MSE = ' + str(mse))
     non_blank_performance(y_test, output, 6)
+    df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': output.flatten()})
+    plt.scatter(y_test, output, color='gray', alpha=0.5)
+    plt.show()
 
 
 def non_blank_performance(real, predicted, threshold):
     real_np = np.array(real)
     predicted_np = np.array(predicted)
+    perfect = 0.0
     good = 0.0
     normal = 0.0
     bad = 0.0
@@ -46,14 +52,16 @@ def non_blank_performance(real, predicted, threshold):
     difference = abs(real - predicted)
     for i in range(len(real_np)):
         if real[i] > threshold:
-            if difference[i] < 2:
+            if difference[i] < 0.5:
+                perfect += 1;
+            elif difference[i] < 2:
                 good +=1
             elif difference[i] < 4:
                 normal += 1
             else:
                 bad += 1
             total += 1
-    result = 'good:', str(good/total), 'normal:', str(normal/total), 'bad:', str(bad/total)
+    result = 'perfect:', str(perfect/total),'good:', str(good/total), 'normal:', str(normal/total), 'bad:', str(bad/total)
     print(result)
 
 
@@ -63,8 +71,8 @@ def pie_chart(real, predicted):
 
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
-data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards']
-data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'clean_sheets']
-data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'clean_sheets']
-data_per_position[1] = ['bonus', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'saves', 'clean_sheets']
-learner(2)
+data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
+data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
+data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
+data_per_position[1] = ['bonus', 'bps', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards', 'penalties_saved', 'difficulty']
+learner(3)
