@@ -136,32 +136,41 @@ pd.set_option('display.max_rows', None)  # show all rows when printing
 gw_df['GW'] = gw_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
 gw_df = gw_df.loc[gw_df.minutes != 0]
 
+#cumulative goals scored by teams_per_week
+home_scores_df = fixtures_df[['event','team_h','team_h_score']].rename(columns={'event': 'GW', 'team_h': 'team'}).groupby(['team','GW']).sum().reset_index()
+away_scores_df = fixtures_df[['event','team_a','team_a_score']].rename(columns={'event': 'GW', 'team_a': 'team'}).groupby(['team','GW']).sum().reset_index()
+scores_df = home_scores_df.append(away_scores_df, ignore_index=True)
+scores_df = scores_df.groupby(['team','GW']).sum().reset_index()
+scores_df['week_goals'] = scores_df['team_a_score'] + scores_df['team_h_score']
+scores_df['opponent_goals'] = scores_df['team_h_score'] + scores_df['team_a_score']
+scores_df = scores_df.groupby(['team','GW','week_goals']).sum().groupby(level=0).cumsum().reset_index()
+scores_df['GW'] = scores_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
+scores_df['opponent_goals'] -= scores_df['week_goals']
+scores_df = scores_df[['team','GW','opponent_goals']]
+scores_df.to_csv('scores.csv', index=False)
+
+
 no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW','fixture']).sum().reset_index()
 no_zero_df.to_csv('no_zero.csv', index=False)
 
-cumulative_df = no_zero_df[['name', 'GW', 'fixture', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
+cumulative_df = no_zero_df[['name', 'GW', 'fixture','opponent_team', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
         'clean_sheets','saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
 
-cumulative_df = cumulative_df.groupby(['name','GW','fixture']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df = cumulative_df.merge(fixtures_df[['id','team_a_score','team_h_score']],  how='left', left_on='fixture', right_on = 'id')
+cumulative_df = cumulative_df.groupby(['name','GW','fixture', 'opponent_team']).sum().groupby(level=0).cumsum().reset_index()
 cumulative_df['total_points'] = cumulative_df['total_points'] - no_zero_df['total_points']
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
 cumulative_df['was_home'] = no_zero_df['was_home']
 
-# adding difficulty file
-# difficulty_df1 = fixtures_df[['event', 'team_h', 'team_a', 'team_h_difficulty']]
-# difficulty_df1 = difficulty_df1.rename(columns={'event': 'GW', 'team_h': 'team_id', 'team_a': 'opponent_id', 'team_h_difficulty': 'difficulty'})
-#
-# difficulty_df2 = fixtures_df[['event', 'team_a', 'team_h', 'team_a_difficulty']]
-# difficulty_df2 = difficulty_df2.rename(columns={'event': 'GW', 'team_a': 'team_id', 'team_h': 'opponent_id', 'team_a_difficulty': 'difficulty'})
-#
-# difficulty_df = difficulty_df1.append(difficulty_df2, ignore_index=True)
-#
-# difficulty_df['GW'] = difficulty_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
 difficulty_df = fixtures_df[['id', 'team_h_difficulty', 'team_a_difficulty']]
 difficulty_df.to_csv('difficulties.csv', index=False)
 #
 cumulative_df = cumulative_df.merge(difficulty_df,  how='left', left_on='fixture', right_on = 'id')
+cumulative_df = cumulative_df.merge(scores_df, how='left', left_on=['GW','opponent_team'], right_on=['GW', 'team'])
 cumulative_df['difficulty'] = cumulative_df['team_h_difficulty']*cumulative_df['was_home'] + cumulative_df['team_a_difficulty']*(1 - cumulative_df['was_home'])
+del cumulative_df['id_x']
+del cumulative_df['id_y']
+del cumulative_df['team']
 cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 
 total_points_df = no_zero_df[['name', 'GW', 'fixture', 'total_points']]

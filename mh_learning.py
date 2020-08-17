@@ -35,6 +35,8 @@ def learner(position):
 
     mse = ((output - y_test) ** 2).mean()
     print('MSE = ' + str(mse))
+    print('MAX = ' +str(output.max()))
+    print('MIN = ' + str(output.min()))
     non_blank_performance(y_test, output, 6)
     df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': output.flatten()})
     plt.scatter(y_test, output, color='gray', alpha=0.5)
@@ -74,5 +76,5 @@ data_per_position = dict()
 data_per_position[4] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
 data_per_position[3]= ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
 data_per_position[2] = ['goals_scored', 'assists', 'bonus', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
-data_per_position[1] = ['bonus', 'bps', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards', 'penalties_saved', 'difficulty']
-learner(3)
+data_per_position[1] = ['bonus', 'bps', 'total_points', 'saves', 'opponent_goals', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards', 'penalties_saved', 'difficulty']
+learner(1)
