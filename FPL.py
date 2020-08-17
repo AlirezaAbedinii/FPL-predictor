@@ -36,6 +36,10 @@ def player_type(player_name):
     return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
         str) == player_name].element_type.tolist()[0]
 
+def player_team(player_name):
+    return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
+        str) == player_name].team.tolist()[0]
+
 
 # this method returns player id given his second_name
 def name_to_id(player_second_name):
@@ -89,7 +93,6 @@ def away_assists(player_id):
                 a += element['value']
     return a
 
-
 data_path = 'data\\'
 history_path = 'history\\'
 
@@ -116,7 +119,7 @@ fixtures_df.stats = classified_stats
 # slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
 # elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
 # del elements_df['element_type']
-elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
+#elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
 # print(elements_df[['first_name','second_name','position','team']])
 elements_df['bonus_percent'] = elements_df.bonus.astype(float) / elements_df.total_points.astype(float)
 # print(elements_df.sort_values())
@@ -133,36 +136,35 @@ pd.set_option('display.max_rows', None)  # show all rows when printing
 gw_df['GW'] = gw_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
 gw_df = gw_df.loc[gw_df.minutes != 0]
 
-# print(player_type('Aaron_Connolly_534'))
+no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW','fixture']).sum().reset_index()
+no_zero_df.to_csv('no_zero.csv', index=False)
 
-cumulative_df = gw_df[
-    ['name', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed', 'ict_index',
-     'influence', 'creativity', 'clean_sheets', 'saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points',
-     'was_home', 'GW']]
-cumulative_df['tmp'] = cumulative_df['total_points']
+cumulative_df = no_zero_df[['name', 'GW', 'fixture', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
+        'clean_sheets','saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
+
+cumulative_df = cumulative_df.groupby(['name','GW','fixture']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df['total_points'] = cumulative_df['total_points'] - no_zero_df['total_points']
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
-cumulative_df = cumulative_df.groupby(['name', 'GW', 'tmp', 'was_home', 'position']).sum().groupby(
-    level=0).cumsum().reset_index()
-cumulative_df['total_points'] = cumulative_df['total_points'] - cumulative_df['tmp']
-del cumulative_df['tmp']
+cumulative_df['was_home'] = no_zero_df['was_home']
 
 # adding difficulty file
-difficulty_df1 = fixtures_df[['event', 'team_h', 'team_h_difficulty']]
-difficulty_df1 = difficulty_df1.rename(columns={'event': 'GW', 'team_h': 'team_id', 'team_h_difficulty': 'difficulty'})
-
-difficulty_df2 = fixtures_df[['event', 'team_a', 'team_a_difficulty']]
-difficulty_df2 = difficulty_df2.rename(columns={'event': 'GW', 'team_a': 'team_id', 'team_a_difficulty': 'difficulty'})
-
-difficulty_df = difficulty_df1.append(difficulty_df2, ignore_index=True)
-
-difficulty_df['GW'] = difficulty_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
-difficulty_df.to_csv('difficulties.csv')
-
-
-cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
+# difficulty_df1 = fixtures_df[['event', 'team_h', 'team_a', 'team_h_difficulty']]
+# difficulty_df1 = difficulty_df1.rename(columns={'event': 'GW', 'team_h': 'team_id', 'team_a': 'opponent_id', 'team_h_difficulty': 'difficulty'})
 #
+# difficulty_df2 = fixtures_df[['event', 'team_a', 'team_h', 'team_a_difficulty']]
+# difficulty_df2 = difficulty_df2.rename(columns={'event': 'GW', 'team_a': 'team_id', 'team_h': 'opponent_id', 'team_a_difficulty': 'difficulty'})
+#
+# difficulty_df = difficulty_df1.append(difficulty_df2, ignore_index=True)
+#
+# difficulty_df['GW'] = difficulty_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
+difficulty_df = fixtures_df[['id', 'team_h_difficulty', 'team_a_difficulty']]
+difficulty_df.to_csv('difficulties.csv', index=False)
+#
+cumulative_df = cumulative_df.merge(difficulty_df,  how='left', left_on='fixture', right_on = 'id')
+cumulative_df['difficulty'] = cumulative_df['team_h_difficulty']*cumulative_df['was_home'] + cumulative_df['team_a_difficulty']*(1 - cumulative_df['was_home'])
+cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 
-total_points_df = gw_df[['name', 'total_points', 'GW', 'was_home']]
+total_points_df = no_zero_df[['name', 'GW', 'fixture', 'total_points']]
+total_points_df = total_points_df.groupby(['name','GW', 'fixture']).sum().reset_index()
 total_points_df['position'] = total_points_df['name'].apply(lambda x: player_type(x))
-total_points_df = total_points_df.groupby(['name', 'GW', 'was_home', 'position', 'total_points']).sum().reset_index()
 total_points_df.to_csv('total_points_gw_2.csv', index=False)
