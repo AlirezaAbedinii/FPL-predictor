@@ -9,30 +9,40 @@ import matplotlib.pyplot as plt
 def learner(position):
 
     x_df = pd.read_csv(data_path + seasons[0] + '\\x.csv')
-    x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
+    x2_df = pd.read_csv(data_path + seasons[1] + '\\x.csv')
+    #x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
     y_df = pd.read_csv(data_path + seasons[0] + '\\y.csv')
-    y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
+    y2_df = pd.read_csv(data_path + seasons[1] + '\\y.csv')
+    #y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
+
 
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
+    x2_df = x2_df.loc[x2_df['position'] == position]  # select position
+    y2_df = y2_df.loc[y2_df['position'] == position]  # select position
+
     necessary_data = data_per_position[position]
     x_df = x_df[necessary_data]
+    x2_df = x2_df[necessary_data]
     y_df = y_df['total_points']
+    y2_df = y2_df['total_points']
     # x_df['was_home'] = x_df['was_home'].apply(lambda x: 1 if x == True else 0)
     # for parameter in necessary_data:
     #     x_df[parameter] = (x_df[parameter] - x_df[parameter].min())/x_df[parameter].max()
 
     x = x_df.to_numpy()
     y = y_df.to_numpy().reshape(-1)
+    x2 = x2_df.to_numpy()
+    y2 = y2_df.to_numpy().reshape(-1)
 
     x = x.astype(float)
     y = y.astype(float)
+    x2 = x2.astype(float)
+    y2 = y2.astype(float)
 
-    if position == 1:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1)
-    else:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    #x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
+    x_train, x_test, y_train, y_test = x, x2, y, y2
 
     if position > 1:
         regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam' , activation='logistic', max_iter=100000,
@@ -94,4 +104,4 @@ data_per_position[3]= ['opponent_conceded','goals_scored', 'assists', 'bonus', '
 data_per_position[2] = ['opponent_goals', 'goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
 data_per_position[1] = ['opponent_goals', 'bonus', 'bps', 'form', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
 
-learner(2)
+learner(4)
