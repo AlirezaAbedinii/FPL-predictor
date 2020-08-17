@@ -36,6 +36,7 @@ def player_type(player_name):
     return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
         str) == player_name].element_type.tolist()[0]
 
+
 def player_team(player_name):
     return elements_df.loc[elements_df['first_name'] + '_' + elements_df['second_name'] + '_' + elements_df['id'].apply(
         str) == player_name].team.tolist()[0]
@@ -93,6 +94,29 @@ def away_assists(player_id):
                 a += element['value']
     return a
 
+
+def calculate_form(number_of_games, df):
+    forms_array = []
+    for i in range(len(df)):
+        name = df.iloc[i]['name']
+        points = 0.0
+        past_games = min(number_of_games, df.iloc[i]['GW'] - 1)
+        counter = 1
+        while counter <= past_games and i - counter >= 0:
+            if df.iloc[i - counter]['GW'] >= int(df.iloc[i]['GW']) - past_games:
+                if df.iloc[i-counter]['name'] == name:
+                    points += df.iloc[i - counter]['points']
+            counter += 1
+
+        if past_games == 0:
+            forms_array.append(0)
+        else:
+            forms_array.append(points / past_games)
+
+    result = pd.DataFrame(forms_array)
+    return result
+
+
 data_path = 'data\\'
 history_path = 'history\\'
 
@@ -119,7 +143,7 @@ fixtures_df.stats = classified_stats
 # slim_elements_df = elements_df[['first_name','second_name','team','element_type','selected_by_percent','now_cost','bonus','minutes','transfers_in','value_season','total_points']]
 # elements_df['position'] = elements_df.element_type.map(element_types_df.set_index('id').singular_name) #replace position name with position id
 # del elements_df['element_type']
-#elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
+# elements_df['team'] = elements_df.team.map(teams_df.set_index('id').name)  # replace team name with team id
 # print(elements_df[['first_name','second_name','position','team']])
 elements_df['bonus_percent'] = elements_df.bonus.astype(float) / elements_df.total_points.astype(float)
 # print(elements_df.sort_values())
@@ -136,13 +160,15 @@ pd.set_option('display.max_rows', None)  # show all rows when printing
 gw_df['GW'] = gw_df['GW'].apply(lambda x: x if x <= 29 else x - 9)
 gw_df = gw_df.loc[gw_df.minutes != 0]
 
-no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW','fixture']).sum().reset_index()
+no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW', 'fixture']).sum().reset_index()
 no_zero_df.to_csv('no_zero.csv', index=False)
 
-cumulative_df = no_zero_df[['name', 'GW', 'fixture', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
-        'clean_sheets','saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
+cumulative_df = no_zero_df[
+    ['name', 'GW', 'fixture', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved',
+     'penalties_missed',
+     'clean_sheets', 'saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
 
-cumulative_df = cumulative_df.groupby(['name','GW','fixture']).sum().groupby(level=0).cumsum().reset_index()
+cumulative_df = cumulative_df.groupby(['name', 'GW', 'fixture']).sum().groupby(level=0).cumsum().reset_index()
 cumulative_df['total_points'] = cumulative_df['total_points'] - no_zero_df['total_points']
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
 cumulative_df['was_home'] = no_zero_df['was_home']
@@ -160,11 +186,23 @@ cumulative_df['was_home'] = no_zero_df['was_home']
 difficulty_df = fixtures_df[['id', 'team_h_difficulty', 'team_a_difficulty']]
 difficulty_df.to_csv('difficulties.csv', index=False)
 #
-cumulative_df = cumulative_df.merge(difficulty_df,  how='left', left_on='fixture', right_on = 'id')
-cumulative_df['difficulty'] = cumulative_df['team_h_difficulty']*cumulative_df['was_home'] + cumulative_df['team_a_difficulty']*(1 - cumulative_df['was_home'])
-cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
+cumulative_df = cumulative_df.merge(difficulty_df, how='left', left_on='fixture', right_on='id')
+cumulative_df['difficulty'] = cumulative_df['team_h_difficulty'] * cumulative_df['was_home'] + cumulative_df[
+    'team_a_difficulty'] * (1 - cumulative_df['was_home'])
+
+# cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 
 total_points_df = no_zero_df[['name', 'GW', 'fixture', 'total_points']]
-total_points_df = total_points_df.groupby(['name','GW', 'fixture']).sum().reset_index()
+total_points_df = total_points_df.groupby(['name', 'GW', 'fixture']).sum().reset_index()
 total_points_df['position'] = total_points_df['name'].apply(lambda x: player_type(x))
+
+# adding form
+form_df = cumulative_df[['name', 'GW']]  # = calculate_form(4)
+form_df['points'] = total_points_df['total_points']
+form_df['form'] = calculate_form(4, form_df)
+form_df.to_csv('form.csv', index=False)
+cumulative_df['form'] = form_df['form']
+
+
+cumulative_df.to_csv('cumulative_gw_2.csv', index=False)
 total_points_df.to_csv('total_points_gw_2.csv', index=False)
