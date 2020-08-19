@@ -1,5 +1,4 @@
 from builtins import float
-import xgboost as xgb
 from sklearn.metrics import mean_squared_error
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
@@ -11,12 +10,12 @@ import matplotlib.pyplot as plt
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
-def learner(position, gw=38, mode='mixed'):
 
+def learner(position, gw=38, mode='mixed'):
     x_df = pd.read_csv(data_path + seasons[0] + '\\x.csv')
     y_df = pd.read_csv(data_path + seasons[0] + '\\y.csv')
     necessary_data = data_per_position[position]
-    if mode=='mixed':
+    if mode == 'mixed':
         x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
         y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
     else:
@@ -29,7 +28,6 @@ def learner(position, gw=38, mode='mixed'):
         x2_df = x2_df[necessary_data]
         y2_df = y2_df['total_points']
 
-
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
@@ -37,9 +35,9 @@ def learner(position, gw=38, mode='mixed'):
     y_df = y_df['total_points']
 
     for feature in necessary_data:
-        x_df[feature] = (x_df[feature] - x_df[feature].min())/x_df[feature].std()
+        x_df[feature] = (x_df[feature] - x_df[feature].min()) / x_df[feature].std()
         x_df[feature] = x_df[feature].replace(np.inf, 0).fillna(0)
-        if mode!='mixed':
+        if mode != 'mixed':
             x2_df[feature] = (x2_df[feature] - x2_df[feature].min()) / x2_df[feature].std()
             x2_df[feature] = x2_df[feature].replace(np.inf, 0).fillna(0)
 
@@ -59,19 +57,23 @@ def learner(position, gw=38, mode='mixed'):
         x_test = x2.astype(float)
         y_test = y2.astype(float)
 
-
     if position > 1:
-        regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam' , activation='logistic', max_iter=100000,
-                                 learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
+        regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam', activation='logistic', max_iter=1000,
+                                 learning_rate_init=0.01).fit(x_train, y_train)
     else:
-        regressor = MLPRegressor(hidden_layer_sizes=(20, 20), solver='adam', activation='logistic', max_iter=100000,
-                                  learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
+        regressor = MLPRegressor(hidden_layer_sizes=(200, 200), solver='adam', activation='logistic', max_iter=100000,
+                                 learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
 
-    output = regressor.predict(x_test)
+    #output = regressor.predict(x_test)
+    output = regressor.predict(x_train)
+    y_test = y_train
+
+
+    print('predicted length:', len(output), 'real length:', len(y_test))
 
     difference = abs(output - y_test)
     print('VARIANCE = ' + str(np.var(difference)))
-    squared_difference = (output - y_test)**2
+    squared_difference = (output - y_test) ** 2
     mse = squared_difference.mean()
     print('MSE = ' + str(mse))
     non_blank_performance(y_test, output, 6, 100)
@@ -100,7 +102,8 @@ def non_blank_performance(real, predicted, threshold1, threshold2):
             else:
                 bad += 1
             total += 1
-    result = 'perfect:', str(perfect/total),'good:', str(good/total), 'normal:', str(normal/total), 'bad:', str(bad/total)
+    result = 'perfect:', str(perfect / total), 'good:', str(good / total), 'normal:', str(normal / total), 'bad:', str(
+        bad / total)
     print(result)
 
 
@@ -108,13 +111,18 @@ def pie_chart(real, predicted):
     pass
 
 
-seasons = ['2018','2019']
+seasons = ['2018', '2019']
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
-data_per_position[4] = ['GW', 'goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
-data_per_position[3]= ['opponent_conceded','goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
-data_per_position[2] = ['GW','opponent_goals', 'goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
-data_per_position[1] = ['GW','opponent_goals', 'bonus', 'minutes', 'bps', 'form', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
+data_per_position[4] = ['GW', 'goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points',
+                        'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
+data_per_position[3] = ['opponent_conceded', 'goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points',
+                        'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
+data_per_position[2] = ['GW', 'opponent_goals', 'goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home',
+                        'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
+data_per_position[1] = ['GW', 'opponent_goals', 'bonus', 'minutes', 'bps', 'form', 'total_points', 'saves',
+                        'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards', 'penalties_saved',
+                        'difficulty']
 
-#mode = 'mixed' or 'split'
-learner(2, mode='split', gw=1)
+# mode = 'mixed' or 'split'
+learner(2, mode='mixed', gw=38)
