@@ -130,11 +130,16 @@ concedes_df.to_csv(temp_data_path + 'concedes.csv', index=False)
 no_zero_df = gw_df.loc[gw_df.minutes > 0].groupby(['name', 'GW','fixture']).sum().reset_index()
 del no_zero_df['id']
 no_zero_df.to_csv(temp_data_path + 'no_zero.csv', index=False)
+temp_df = no_zero_df[['goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
+        'clean_sheets','saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
 cumulative_df = no_zero_df[['name', 'GW', 'fixture','opponent_team', 'goals_scored', 'assists', 'bonus', 'bps', 'red_cards', 'penalties_saved', 'penalties_missed',
         'clean_sheets','saves', 'goals_conceded', 'yellow_cards', 'minutes', 'total_points']]
 cumulative_df = cumulative_df.merge(fixtures_df[['id','team_a_score','team_h_score']],  how='left', left_on='fixture', right_on = 'id')
 cumulative_df = cumulative_df.groupby(['name','GW','fixture', 'opponent_team']).sum().groupby(level=0).cumsum().reset_index()
-cumulative_df['total_points'] = cumulative_df['total_points'] - no_zero_df['total_points']
+
+for key in temp_df.columns:
+    cumulative_df[key] -= no_zero_df[key]
+
 cumulative_df['position'] = cumulative_df['name'].apply(lambda x: player_type(x))
 cumulative_df['was_home'] = no_zero_df['was_home']
 
@@ -150,8 +155,8 @@ del cumulative_df['id_y']
 del cumulative_df['team_x']
 del cumulative_df['team_y']
 
-cumulative_df['opponent_goals'] = cumulative_df['opponent_goals'] / abs(cumulative_df['GW'] - 1.00001)
-cumulative_df['opponent_conceded'] = cumulative_df['opponent_conceded'] / abs(cumulative_df['GW'] - 1.00001)
+#cumulative_df['opponent_goals'] = cumulative_df['opponent_goals'] / abs(cumulative_df['GW'] - 1.00001)
+#cumulative_df['opponent_conceded'] = cumulative_df['opponent_conceded'] / abs(cumulative_df['GW'] - 1.00001)
 
 total_points_df = no_zero_df[['name', 'GW', 'fixture', 'total_points']]
 total_points_df = total_points_df.groupby(['name','GW', 'fixture']).sum().reset_index()

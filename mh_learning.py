@@ -1,3 +1,6 @@
+from builtins import float
+import xgboost as xgb
+from sklearn.metrics import mean_squared_error
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -5,55 +8,64 @@ import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
 
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 
-def learner(position):
+def learner(position, gw=38, mode='mixed'):
 
     x_df = pd.read_csv(data_path + seasons[0] + '\\x.csv')
-    x2_df = pd.read_csv(data_path + seasons[1] + '\\x.csv')
-    #x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
     y_df = pd.read_csv(data_path + seasons[0] + '\\y.csv')
-    y2_df = pd.read_csv(data_path + seasons[1] + '\\y.csv')
-    #y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
+    necessary_data = data_per_position[position]
+    if mode=='mixed':
+        x_df = x_df.append(pd.read_csv(data_path + seasons[1] + '\\x.csv'), ignore_index=True)
+        y_df = y_df.append(pd.read_csv(data_path + seasons[1] + '\\y.csv'), ignore_index=True)
+    else:
+        x2_df = pd.read_csv(data_path + seasons[1] + '\\x.csv')
+        y2_df = pd.read_csv(data_path + seasons[1] + '\\y.csv')
+        x2_df = x2_df.loc[x2_df['position'] == position]  # select position
+        y2_df = y2_df.loc[y2_df['position'] == position]  # select position
+        x2_df = x2_df.loc[x2_df['GW'] <= gw]
+        y2_df = y2_df.loc[y2_df['GW'] <= gw]
+        x2_df = x2_df[necessary_data]
+        y2_df = y2_df['total_points']
 
 
     x_df = x_df.loc[x_df['position'] == position]  # select position
     y_df = y_df.loc[y_df['position'] == position]  # select position
 
-    x2_df = x2_df.loc[x2_df['position'] == position]  # select position
-    y2_df = y2_df.loc[y2_df['position'] == position]  # select position
-
-    necessary_data = data_per_position[position]
     x_df = x_df[necessary_data]
-    x2_df = x2_df[necessary_data]
     y_df = y_df['total_points']
-    y2_df = y2_df['total_points']
-    # x_df['was_home'] = x_df['was_home'].apply(lambda x: 1 if x == True else 0)
-    # for parameter in necessary_data:
-    #     x_df[parameter] = (x_df[parameter] - x_df[parameter].min())/x_df[parameter].max()
+
+    for feature in necessary_data:
+        x_df[feature] = (x_df[feature] - x_df[feature].min())/x_df[feature].std()
+        x_df[feature] = x_df[feature].replace(np.inf, 0).fillna(0)
+        if mode!='mixed':
+            x2_df[feature] = (x2_df[feature] - x2_df[feature].min()) / x2_df[feature].std()
+            x2_df[feature] = x2_df[feature].replace(np.inf, 0).fillna(0)
 
     x = x_df.to_numpy()
     y = y_df.to_numpy().reshape(-1)
-    x2 = x2_df.to_numpy()
-    y2 = y2_df.to_numpy().reshape(-1)
 
     x = x.astype(float)
     y = y.astype(float)
-    x2 = x2.astype(float)
-    y2 = y2.astype(float)
 
-    #x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
-    x_train, x_test, y_train, y_test = x, x2, y, y2
+    if mode == 'mixed':
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, shuffle=True)
+    else:
+        x2 = x2_df.to_numpy()
+        y2 = y2_df.to_numpy().reshape(-1)
+        x_train = x.astype(float)
+        y_train = y.astype(float)
+        x_test = x2.astype(float)
+        y_test = y2.astype(float)
+
 
     if position > 1:
         regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam' , activation='logistic', max_iter=100000,
                                  learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
     else:
-        # regressor = DecisionTreeRegressor(criterion='mse', splitter='best', max_depth=10, min_samples_split=0.2,
-        #                                   min_samples_leaf=1, min_weight_fraction_leaf=0.0,
-        #                                   max_features='auto').fit(x_train, y_train)
         regressor = MLPRegressor(hidden_layer_sizes=(20, 20), solver='adam', activation='logistic', max_iter=100000,
                                   learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
-
 
     output = regressor.predict(x_test)
 
@@ -99,9 +111,10 @@ def pie_chart(real, predicted):
 seasons = ['2018','2019']
 data_path = 'mh_learning_data\\'
 data_per_position = dict()
-data_per_position[4] = ['goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
+data_per_position[4] = ['GW', 'goals_scored', 'assists', 'opponent_conceded', 'bonus', 'bps', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'difficulty']
 data_per_position[3]= ['opponent_conceded','goals_scored', 'assists', 'bonus', 'form', 'bps', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'clean_sheets', 'difficulty']
-data_per_position[2] = ['opponent_goals', 'goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
-data_per_position[1] = ['opponent_goals', 'bonus', 'bps', 'form', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
+data_per_position[2] = ['GW','opponent_goals', 'goals_scored', 'assists', 'bonus', 'form', 'total_points', 'was_home', 'minutes', 'yellow_cards', 'red_cards', 'goals_conceded', 'clean_sheets', 'difficulty']
+data_per_position[1] = ['GW','opponent_goals', 'bonus', 'minutes', 'bps', 'form', 'total_points', 'saves', 'goals_conceded', 'was_home', 'clean_sheets', 'yellow_cards', 'red_cards' ,'penalties_saved', 'difficulty']
 
-learner(4)
+#mode = 'mixed' or 'split'
+learner(2, mode='split', gw=1)
