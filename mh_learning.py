@@ -58,8 +58,8 @@ def learner(position, gw=38, mode='mixed'):
         y_test = y2.astype(float)
 
     if position > 1:
-        regressor = MLPRegressor(hidden_layer_sizes=(100, 100), solver='adam', activation='logistic', max_iter=1000,
-                                 learning_rate_init=0.01).fit(x_train, y_train)
+        regressor = MLPRegressor(hidden_layer_sizes=(100,100), solver='adam', activation='logistic', max_iter=100000,
+                                 learning_rate_init=0.001).fit(x_train, y_train)
     else:
         regressor = MLPRegressor(hidden_layer_sizes=(200, 200), solver='adam', activation='logistic', max_iter=100000,
                                  learning_rate_init=0.0001, learning_rate='invscaling').fit(x_train, y_train)
@@ -67,9 +67,6 @@ def learner(position, gw=38, mode='mixed'):
     #output = regressor.predict(x_test)
     output = regressor.predict(x_train)
     y_test = y_train
-
-
-    print('predicted length:', len(output), 'real length:', len(y_test))
 
     difference = abs(output - y_test)
     print('VARIANCE = ' + str(np.var(difference)))
